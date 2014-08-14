@@ -34,7 +34,8 @@ Show any code that is needed to
 1. Load the data (i.e. <span style="color:red">read.csv()</span>)
 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
-```{r}
+
+```r
 # Set R working directory to the directory containing the cloned assignment github repository 
 setwd("~/reproducibleResearch/RepData_PeerAssessment1")
 
@@ -45,13 +46,21 @@ data <- read.csv(unzip("activity.zip", "activity.csv"))
 str(data)
 ```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
 ## What is mean total number of steps taken per day?
 For this part of the assignment, you can ignore the missing values in the dataset.
 
 1. Make a histogram of the total number of steps taken each day
 2. Calculate and report the mean and median total number of steps taken per day
 
-```{r}
+
+```r
 # Get total number of steps grouped by date
 totalStepsEachDay <- tapply(data$steps, data$date, sum)
 
@@ -67,20 +76,33 @@ abline(v=totalStepsEachDayMedian, col="red", lwd=10)
 abline(v=totalStepsEachDayMean, lty=5)
 ```
 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+
 The **mean** (shown as dotted line) and **median** (shown as red line) of the total number of steps taken per day are 10766.19 and 10765 respectively.  They are obtained from R computation as shown below:  
 
-```{r}
+
+```r
 sprintf("%.2f", totalStepsEachDayMean)
 ```
-```{r}
+
+```
+## [1] "10766.19"
+```
+
+```r
 sprintf("%.2f", totalStepsEachDayMedian)
+```
+
+```
+## [1] "10765.00"
 ```
 
 ## What is the average daily activity pattern?
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
+
+```r
 # Group data by 5-min intervals, then calculate the mean of steps taken for each interval
 library(reshape2)
 
@@ -99,16 +121,24 @@ abline(v=intervalWithAveMaxStep, lty=5, col="red")
 text(1600,190, paste("Interval ", intervalWithAveMaxStep, " (indicated dotted line) i.e. the \n 5-minute interval starting at 8:35 AM has \nthe average maximum steps of", round(max(intervalDataMean$step), digit=4)), col="red")
 ```
 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
+
 ## Imputing missing values
 Note that there are a number of days/intervals where there are missing values (coded as <span style="color:red">NA</span>). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
 **(1)** Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with <span style="color:red">NAs</span>)
-```{r}
+
+```r
 sum(rowSums(is.na(data)))
 ```
 
+```
+## [1] 2304
+```
+
 **(2)** Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-```{r}
+
+```r
 # Divide data into dataWithNA and dataWithNoNA datasets
 dataWithNA <- data[!complete.cases(data), ]
 dataWithNoNA <- data[complete.cases(data), ]
@@ -118,12 +148,34 @@ dataWithNoNA <- data[complete.cases(data), ]
 dataWithNA$steps <- intervalDataMean$steps[match(dataWithNA$interval,unique(dataWithNA$interval))]
 head(dataWithNA)
 ```
-```{r}
+
+```
+##     steps       date interval
+## 1 1.71698 2012-10-01        0
+## 2 0.33962 2012-10-01        5
+## 3 0.13208 2012-10-01       10
+## 4 0.15094 2012-10-01       15
+## 5 0.07547 2012-10-01       20
+## 6 2.09434 2012-10-01       25
+```
+
+```r
 tail(dataWithNA)
 ```
 
+```
+##        steps       date interval
+## 17563 2.6038 2012-11-30     2330
+## 17564 4.6981 2012-11-30     2335
+## 17565 3.3019 2012-11-30     2340
+## 17566 0.6415 2012-11-30     2345
+## 17567 0.2264 2012-11-30     2350
+## 17568 1.0755 2012-11-30     2355
+```
+
 **(3)** Create a new dataset that is equal to the original dataset but with the missing data filled in.
-```{r}
+
+```r
 # Merge row-wise dataWithNA dataset having missing values fill-in  with dataWithNoNA dataset:
 combineData <- rbind(dataWithNA, dataWithNoNA)
 
@@ -133,13 +185,26 @@ newData <- combineData[order(combineData$date),]
 # Have a look at the new dataset
 str(newData)
 ```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
 There are no missing values (<span style="color:red">NAs</span>) in the new dataset as shown below:
-```{r}
+
+```r
 sum(rowSums(is.na(newData)))
 ```
 
+```
+## [1] 0
+```
+
 **(4)** Make a histogram of the total number of steps taken each day and calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
-```{r}
+
+```r
 # Get total number of steps taken each day for the new dataset:
 newTotalStepsEachDay <- tapply(newData$steps, newData$date, sum)
 
@@ -155,12 +220,24 @@ abline(v=newTotalStepsEachDayMedian, col="red", lwd=10)
 abline(v=newTotalStepsEachDayMean, lty=5)
 ```
 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
+
 With imputing missing values, the new **mean** and **median** of the total number of steps taken each day are exactly the same.  The new **mean** (shown as dotted line) and **median** (shown as red line)  are 10766.19 and 10766.19 respectively.  They are obtained from R computation as shown below:  
-```{r}
+
+```r
 sprintf("%.2f", newTotalStepsEachDayMean)
 ```
-```{r}
+
+```
+## [1] "10766.19"
+```
+
+```r
 sprintf("%.2f", newTotalStepsEachDayMedian)
+```
+
+```
+## [1] "10766.19"
 ```
 
 Whereas, without imputing missing values, The **mean** and **median** of the total number of steps taken per day are 10766.19 and 10765 respectively.  So, the **mean** and **median** differ slightly.
@@ -171,7 +248,8 @@ Therefore, missing-values imputation increases the median slightly (making it cl
 For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 
 **(1)** Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
-```{r}
+
+```r
 # Add a new factor variable called weekdays to newData dataset with two levels – “weekday” and “weekend”
 newData$weekdays <- as.factor(ifelse(weekdays(as.Date(newData$date), abbreviate=TRUE) %in% c("Sat","Sun"),
                                      "weekend", "weekday")
@@ -181,12 +259,27 @@ newData$weekdays <- as.factor(ifelse(weekdays(as.Date(newData$date), abbreviate=
 str(newData)
 ```
 
-```{r}
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps   : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ weekdays: Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...
+```
+
+
+```r
  summary(newData$weekdays)
 ```
 
+```
+## weekday weekend 
+##   12960    4608
+```
+
 **(2)** Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
-```{r} 
+
+```r
 # Group data first by weekdays then by 5-min intervals, then calculate the mean of steps taken
 library(reshape2)
 
@@ -204,4 +297,6 @@ xyplot(weekdaysData$steps ~ weekdaysData$interval | weekdaysData$weekdays,
        xlab="5-Minute Interval", 
        ylab="Average Number of Steps")
 ```
+
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16.png) 
 
